@@ -23,5 +23,5 @@ app.use((req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server listening at 35.173.100.192:${port}`);
+  console.log(`Server listening at http://localhost:${port}`);
 });
