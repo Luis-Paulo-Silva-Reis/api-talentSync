@@ -11,8 +11,7 @@ const jwtSecret = process.env.JWT_SECRET;
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const sql =
-    "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+  const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
   pool.query(sql, [name, email, hashedPassword], (err, result) => {
     if (err) {
       console.error("Error inserting user into database: " + err.stack);
@@ -24,39 +23,6 @@ router.post("/register", async (req, res) => {
       expiresIn: "24h",
     });
     res.json({ userId, name, email, token });
-  });
-});
-
-router.post("/auth", (req, res) => {
-  const { email, password } = req.body;
-  const sql = "SELECT id, name, email, password FROM users WHERE email = ?";
-  pool.query(sql, [email], async (err, results) => {
-    if (err) {
-      console.error("Error selecting user from database: " + err.stack);
-      res.status(500).json({ error: "Internal server error" });
-      return;
-    }
-    if (results.length === 1) {
-      const passwordMatch = await bcrypt.compare(password, results[0].password);
-      if (passwordMatch) {
-        const token = jwt.sign(
-          { userId: results[0].id },
-          process.env.JWT_SECRET,
-          { expiresIn: "24h" }
-        );
-
-        res.json({
-          id: results[0].id,
-          name: results[0].name,
-          email: results[0].email,
-          token: token,
-        });
-      } else {
-        res.status(401).json({ error: "Invalid email or password" });
-      }
-    } else {
-      res.status(401).json({ error: "Invalid email or password" });
-    }
   });
 });
 
