@@ -9,74 +9,94 @@ const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET;
 
 router.post("/register", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-    // Verifica se o e-mail já está cadastrado
-    const emailCheck = "SELECT COUNT(*) as count FROM users WHERE email = ?";
-    const [emailCheckResult] = await pool.query(emailCheck, [email]);
-    if (emailCheckResult[0].count > 0) {
-      res.status(400).json({ error: "Email already exists" });
-      return;
-    }
-
-    // Cria hash da senha
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insere usuário no banco de dados
-    const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-    const [insertResult] = await pool.query(sql, [
-      name,
-      email,
-      hashedPassword,
-    ]);
-    const userId = insertResult.insertId;
-
-    // Gera token JWT e retorna na resposta
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
+  // Verifica se o e-mail já foi registrado antes de inserir um novo usuário
+  const emailExists = await new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM users WHERE email = ?";
+    pool.query(sql, [email], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result.length > 0);
+      }
     });
-    res.json({ userId, name, email, token });
-  } catch (error) {
-    console.error("Error registering user: " + error.stack);
+  });
+
+  if (emailExists) {
+    res.status(400).json({ error: "Email already in use" });
+    return;
+  }
+
+  // Hash a senha do usuário antes de armazená-la no banco de dados
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+  try {
+    await pool.query(sql, [name, email, hashedPassword]);
+    res.status(201).json({ name, email });
+  } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Rota para autenticação de usuário
-router.post("/auth", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Verifica se o e-mail existe no banco de dados
-    const sql = "SELECT id, name, email, password FROM users WHERE email = ?";
-    const [results] = await pool.query(sql, [email]);
-    if (results.length !== 1) {
-      res.status(401).json({ error: "Invalid email or password" });
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  const sql = "SELECT id, name, email, password FROM users WHERE email = ?";
+  pool.query(sql, [email], async (err, results) => {
+    if (err) {
+      console.error("Error selecting user from database: " + err.stack);
+      res.status(500).json({ error: "Internal server error" });
       return;
     }
-
-    // Compara a senha digitada com a senha armazenada no banco de dados
-    const passwordMatch = await bcrypt.compare(password, results[0].password);
-    if (!passwordMatch) {
+    if (results.length === 1) {
+      const passwordMatch = await bcrypt.compare(password, results[0].password);
+      if (passwordMatch) {
+        res.json({
+          id: results[0].id,
+          name: results[0].name,
+          email: results[0].email,
+        });
+      } else {
+        res.status(401).json({ error: "Invalid email or password" });
+      }
+    } else {
       res.status(401).json({ error: "Invalid email or password" });
+    }
+  });
+});
+
+router.post("/auth", (req, res) => {
+  const { email, password } = req.body;
+  const sql = "SELECT id, name, email, password FROM users WHERE email = ?";
+  pool.query(sql, [email], async (err, results) => {
+    if (err) {
+      console.error("Error selecting user from database: " + err.stack);
+      res.status(500).json({ error: "Internal server error" });
       return;
     }
+    if (results.length === 1) {
+      const passwordMatch = await bcrypt.compare(password, results[0].password);
+      if (passwordMatch) {
+        const token = jwt.sign(
+          { userId: results[0].id },
+          process.env.JWT_SECRET,
+          { expiresIn: "24h" }
+        );
 
-    // Gera token JWT e retorna na resposta
-    const token = jwt.sign({ userId: results[0].id }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
-    });
-    res.json({
-      id: results[0].id,
-      name: results[0].name,
-      email: results[0].email,
-      token: token,
-    });
-  } catch (error) {
-    console.error("Error authenticating user: " + error.stack);
-    res.status(500).json({ error: "Internal server error" });
-  }
+        res.json({
+          id: results[0].id,
+          name: results[0].name,
+          email: results[0].email,
+          token: token,
+        });
+      } else {
+        res.status(401).json({ error: "Invalid email or password" });
+      }
+    } else {
+      res.status(401).json({ error: "Invalid email or password" });
+    }
+  });
 });
 
 router.get("/protected", verifyToken, (req, res) => {
