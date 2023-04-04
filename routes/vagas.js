@@ -5,11 +5,11 @@ const verifyToken = require("../middlewares/verifyToken");
 const router = express.Router();
 
 router.post("/jobsposting", verifyToken, (req, res) => {
-  const user_id = req.user.id; // Getting the user_id directly from the verified token
+  const userId = req.user.userId; // Getting the user_id directly from the verified token
   const { titulo, descricao } = req.body;
   pool.query(
     "INSERT INTO Vagas (user_id, titulo, descricao) VALUES (?, ?, ?)",
-    [user_id, titulo, descricao],
+    [userId, titulo, descricao],
     (error, result, fields) => {
       if (error) {
         console.log("Database error:", error);
