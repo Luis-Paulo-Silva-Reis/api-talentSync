@@ -21,7 +21,6 @@ router.post("/jobsposting", verifyToken, async (req, res) => {
   }
 });
 
-
 router.get("/jobsposting/:id", verifyToken, (req, res) => {
   const user_id = req.user.id; // Getting the user_id directly from the verified token
   const { id } = req.params;
@@ -41,17 +40,20 @@ router.get("/jobsposting/:id", verifyToken, (req, res) => {
   );
 });
 
-router.get("/jobs", verifyToken, (req, res) => {
-  pool.query("SELECT titulo, descricao FROM Vagas;", (error, result, fields) => {
-    if (error) {
-      console.log("Database error:", error);
-      res.status(500).json({ error: "Erro ao acessar o banco de dados." });
-    } else if (result.length === 0) {
-      res.status(404).json({ error: "Nenhum resultado encontrado." });
-    } else {
-      res.status(200).json(result);
+router.get("/jobs", (req, res) => {
+  pool.query(
+    "SELECT titulo, descricao FROM Vagas;",
+    (error, result, fields) => {
+      if (error) {
+        console.log("Database error:", error);
+        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
+      } else if (result.length === 0) {
+        res.status(404).json({ error: "Nenhum resultado encontrado." });
+      } else {
+        res.status(200).json(result);
+      }
     }
-  });
+  );
 });
 
 module.exports = router;
