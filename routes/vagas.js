@@ -4,24 +4,23 @@ const verifyToken = require("../middlewares/verifyToken");
 
 const router = express.Router();
 
-router.post("/jobsposting", verifyToken, (req, res) => {
-  const userId = req.user.userId; // Getting the user_id directly from the verified token
-  const { titulo, descricao } = req.body;
-  pool.query(
-    "INSERT INTO Vagas (user_id, titulo, descricao) VALUES (?, ?, ?)",
-    [userId, titulo, descricao],
-    (error, result, fields) => {
-      if (error) {
-        console.log("Database error:", error);
-        res.status(400).json({ error: "Erro ao inserir a vaga." });
-      } else {
-        res
-          .status(201)
-          .json({ message: "Vaga inserida com sucesso.", vaga_id: result.insertId });
-      }
-    }
-  );
+router.post("/jobsposting", verifyToken, async (req, res) => {
+  try {
+    const user_id = req.userId; // Obter user_id diretamente do token verificado
+    const { titulo, descricao } = req.body;
+    const { insertId } = await pool.query(
+      "INSERT INTO Vagas (user_id, titulo, descricao) VALUES (?, ?, ?)",
+      [user_id, titulo, descricao]
+    );
+    res
+      .status(201)
+      .json({ message: "Vaga inserida com sucesso.", vaga_id: insertId });
+  } catch (error) {
+    console.log("Database error:", error); // Adicione esta linha para registrar o erro do banco de dados
+    res.status(400).json({ error: "Erro ao inserir a vaga." });
+  }
 });
+
 
 router.get("/jobsposting/:id", verifyToken, (req, res) => {
   const user_id = req.user.id; // Getting the user_id directly from the verified token
