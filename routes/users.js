@@ -79,7 +79,12 @@ router.post("/auth", (req, res) => {
       const passwordMatch = await bcrypt.compare(password, results[0].password);
       if (passwordMatch) {
         const token = jwt.sign(
-          { userId: results[0].id },
+          {
+            userId: results[0].id,
+            name: results[0].name,
+            email: results[0].email,
+          },
+
           process.env.JWT_SECRET,
           { expiresIn: "24h" }
         );
