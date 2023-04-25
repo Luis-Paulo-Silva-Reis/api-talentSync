@@ -7,6 +7,9 @@ const usersRouter = require("./routes/users");
 const vagasRouter = require("./routes/vagas");
 const emailRoute = require("./routes/emailRoute");
 
+
+
+
 dotenv.config();
 
 const app = express();
