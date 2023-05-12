@@ -6,9 +6,8 @@ const bodyParser = require("body-parser");
 const usersRouter = require("./routes/users");
 const vagasRouter = require("./routes/vagas");
 const emailRoute = require("./routes/emailRoute");
-
-
-
+const https = require("https");
+const fs = require("fs");
 
 dotenv.config();
 
@@ -27,9 +26,14 @@ app.use("/", vagasRouter);
 app.use("/email", emailRoute);
 
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+res.status(404).json({ error: "Route not found" });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+const httpsOptions = {
+  key: fs.readFileSync("/opt/bitnami/letsencrypt/certificates/www.talentsync.click.key"),
+  cert: fs.readFileSync("/opt/bitnami/letsencrypt/certificates/www.talentsync.click.crt")
+};
+
+https.createServer(httpsOptions, app).listen(port, () => {
+  console.log(`Server listening at https://talentsync.click:${port}`);
 });
