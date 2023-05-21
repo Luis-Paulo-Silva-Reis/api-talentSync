@@ -7,11 +7,40 @@ const router = express.Router();
 router.post("/jobsposting", verifyToken, async (req, res) => {
   try {
     const user_id = req.userId; // Obter user_id diretamente do token verificado
-    const { titulo, descricao } = req.body;
+    const {
+      titulo,
+      descricao,
+      empresa,
+      localizacao,
+      tipoEmprego,
+      salario,
+      requisitosAdicionais,
+      experienciaMinima,
+      dataPublicacao,
+      dataExpiracao,
+      linkAplicacao,
+      status
+    } = req.body;
+    
     const { insertId } = await pool.query(
-      "INSERT INTO Vagas (user_id, titulo, descricao) VALUES (?, ?, ?)",
-      [user_id, titulo, descricao]
+      "INSERT INTO Vagas (user_id, titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        user_id,
+        titulo,
+        descricao,
+        empresa,
+        localizacao,
+        tipoEmprego,
+        salario,
+        requisitosAdicionais,
+        experienciaMinima,
+        dataPublicacao,
+        dataExpiracao,
+        linkAplicacao,
+        status
+      ]
     );
+    
     res
       .status(201)
       .json({ message: "Vaga inserida com sucesso.", vaga_id: insertId });
@@ -25,7 +54,7 @@ router.get("/jobsposting/:id", verifyToken, (req, res) => {
   const user_id = req.user.id; // Getting the user_id directly from the verified token
   const { id } = req.params;
   pool.query(
-    "SELECT titulo, descricao FROM Vagas WHERE vaga_id = ? AND user_id = ?",
+    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
     [id, user_id],
     (error, result, fields) => {
       if (error) {
@@ -42,7 +71,7 @@ router.get("/jobsposting/:id", verifyToken, (req, res) => {
 
 router.get("/jobs", (req, res) => {
   pool.query(
-    "SELECT titulo, descricao FROM Vagas;",
+    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas;",
     (error, result, fields) => {
       if (error) {
         console.log("Database error:", error);
