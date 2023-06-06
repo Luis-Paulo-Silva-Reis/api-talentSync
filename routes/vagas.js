@@ -21,7 +21,7 @@ router.post("/jobsposting", verifyToken, async (req, res) => {
       linkAplicacao,
       status
     } = req.body;
-    
+
     const { insertId } = await pool.query(
       "INSERT INTO Vagas (user_id, titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
@@ -40,7 +40,7 @@ router.post("/jobsposting", verifyToken, async (req, res) => {
         status
       ]
     );
-    
+
     res
       .status(201)
       .json({ message: "Vaga inserida com sucesso.", vaga_id: insertId });
@@ -50,81 +50,44 @@ router.post("/jobsposting", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/jobsposting/:id", verifyToken, (req, res) => {
-  const user_id = req.user.id; // Getting the user_id directly from the verified token
-  const { id } = req.params;
-  pool.query(
-    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
-    [id, user_id],
-    (error, result, fields) => {
-      if (error) {
-        console.log("Database error:", error);
-        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
-      } else if (result.length < 1) {
-        return res.status(404).json({ error: "Vaga não encontrada." });
-      } else {
-        res.status(200).json(result[0]);
-      }
-    }
-  );
-});
-
 router.get("/jobs", (req, res) => {
   pool.query(
-    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas;",
+    "SELECT id, titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas;",
     (error, result, fields) => {
       if (error) {
         console.log("Database error:", error);
-        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
-      } else if (result.length === 0) {
-        res.status(404).json({ error: "Nenhum resultado encontrado." });
-      } else {
-        res.status(200).json(result);
+        return res.status(500).json({ error: "Erro ao acessar o banco de dados." });
       }
+      
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Nenhum resultado encontrado." });
+      }
+      
+      res.status(200).json(result);
     }
   );
 });
 
 router.get("/jobs/:id", (req, res) => {
-  const user_id = req.userId; // Altere de req.user.id para req.userId
+  const user_id = req.userId;
   const { id } = req.params;
   pool.query(
-    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
+    "SELECT id, titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
     [id, user_id],
     (error, result, fields) => {
       if (error) {
         console.log("Database error:", error);
-        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
-      } else if (result.length < 1) {
-        return res.status(404).json({ error: "Vaga não encontrada." });
-      } else {
-        res.status(200).json(result[0]);
+        return res.status(500).json({ error: "Erro ao acessar o banco de dados." });
       }
+      
+      if (result.length < 1) {
+        return res.status(404).json({ error: "Vaga não encontrada." });
+      }
+      
+      res.status(200).json(result[0]);
     }
   );
 });
-
-router.get("/jobsposting/:id", (req, res) => {
-  const user_id = req.userId; 
-  const { id } = req.params;
-  pool.query(
-    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
-    [id, user_id],
-    (error, result, fields) => {
-      if (error) {
-        console.log("Database error:", error);
-        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
-      } else if (result.length < 1) {
-        return res.status(404).json({ error: "Vaga não encontrada." });
-      } else {
-        res.status(200).json(result[0]);
-      }
-    }
-  );
-});
-
-
-
 
 
 module.exports = router;
