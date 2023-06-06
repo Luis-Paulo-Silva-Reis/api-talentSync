@@ -85,4 +85,26 @@ router.get("/jobs", (req, res) => {
   );
 });
 
+router.get("/jobs/:id", verifyToken, (req, res) => {
+  const user_id = req.user.id; // Obtendo o user_id diretamente do token verificado
+  const { id } = req.params;
+  pool.query(
+    "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
+    [id, user_id],
+    (error, result, fields) => {
+      if (error) {
+        console.log("Database error:", error);
+        res.status(500).json({ error: "Erro ao acessar o banco de dados." });
+      } else if (result.length < 1) {
+        return res.status(404).json({ error: "Vaga não encontrada." });
+      } else {
+        res.status(200).json(result[0]);
+      }
+    }
+  );
+});
+
+
+
+
 module.exports = router;
