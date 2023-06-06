@@ -69,11 +69,10 @@ router.get("/jobs", (req, res) => {
 });
 
 router.get("/jobs/:id", (req, res) => {
-  const user_id = req.userId;
   const { id } = req.params;
   pool.query(
-    "SELECT id, titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
-    [id, user_id],
+    "SELECT * FROM Vagas WHERE id = ?",
+    [id],
     (error, result, fields) => {
       if (error) {
         console.log("Database error:", error);
