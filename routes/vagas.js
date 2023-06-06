@@ -86,7 +86,7 @@ router.get("/jobs", (req, res) => {
 });
 
 router.get("/jobs/:id", (req, res) => {
-  const user_id = req.user.id; // Obtendo o user_id diretamente do token verificado
+  const user_id = req.userId; // Altere de req.user.id para req.userId
   const { id } = req.params;
   pool.query(
     "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
@@ -105,7 +105,7 @@ router.get("/jobs/:id", (req, res) => {
 });
 
 router.get("/jobsposting/:id", (req, res) => {
-  const user_id = req.user.id; // Obtendo o user_id diretamente do token verificado
+  const user_id = req.userId; 
   const { id } = req.params;
   pool.query(
     "SELECT titulo, descricao, empresa, localizacao, tipo_emprego, salario, requisitos_adicionais, experiencia_minima, data_publicacao, data_expiracao, link_aplicacao, status FROM Vagas WHERE id = ? AND user_id = ?",
