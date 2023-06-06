@@ -85,7 +85,7 @@ router.get("/jobs", (req, res) => {
   );
 });
 
-router.get("/jobs/:id", verifyToken, (req, res) => {
+router.get("/jobs/:id", (req, res) => {
   const user_id = req.user.id; // Obtendo o user_id diretamente do token verificado
   const { id } = req.params;
   pool.query(
@@ -104,7 +104,7 @@ router.get("/jobs/:id", verifyToken, (req, res) => {
   );
 });
 
-router.get("/jobsposting/:id", verifyToken, (req, res) => {
+router.get("/jobsposting/:id", (req, res) => {
   const user_id = req.user.id; // Obtendo o user_id diretamente do token verificado
   const { id } = req.params;
   pool.query(
