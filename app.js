@@ -35,5 +35,5 @@ const httpsOptions = {
 };
 
 https.createServer(httpsOptions, app).listen(port, () => {
-  console.log(`Server listening at api-talent-sync-git-vercel-luis-paulo-silva-reis.vercel.app:${port}`);
+  console.log(`Server listening at localhost:${port}`);
 });
