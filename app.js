@@ -35,5 +35,5 @@ const httpsOptions = {
 };
 
 https.createServer(httpsOptions, app).listen(port, () => {
-  console.log(`Server listening at https://talentsync.click:${port}`);
+  console.log(`Server listening at https://api-talent-sync.vercel.app/:${port}`);
 });
